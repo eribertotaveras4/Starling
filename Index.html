@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buzón de Cartas de Amor</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffb3b3 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .mailbox {
+            background: linear-gradient(45deg, #ff4d4d, #ff1a1a);
+            border-radius: 15px;
+            padding: 30px;
+            width: 300px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mailbox::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            animation: shine 4s linear infinite;
+        }
+
+        @keyframes shine {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .letters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            max-width: 900px;
+            padding: 20px;
+        }
+
+        .letter {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 180px;
+            height: 120px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50,10 L90,40 L90,90 L10,90 L10,40 Z' fill='none' stroke='%23ffdddd' stroke-width='2'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 80%;
+        }
+
+        .letter:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 15px 25px rgba(255,77,77,0.3);
+        }
+
+        .letter::after {
+            content: '❤️';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 1.2em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .letter:hover::after {
+            opacity: 1;
+        }
+
+        .letter-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ff4d4d;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .letter-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #ff4d4d;
+            transition: transform 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,77,77,0.1);
+        }
+
+        .close-button:hover {
+            transform: rotate(90deg);
+            background: rgba(255,77,77,0.2);
+        }
+
+        h1 {
+            color: #ff1a1a;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hearts {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .heart {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,77,77,0.2);
+            transform: rotate(45deg);
+            animation: heartFloat 15s linear infinite;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: inherit;
+        }
+
+        .heart::before {
+            left: -10px;
+        }
+
+        .heart::after {
+            top: -10px;
+        }
+
+        @keyframes heartFloat {
+            0% { transform: translateY(100vh) rotate(45deg); }
+            100% { transform: translateY(-100vh) rotate(45deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts" id="hearts"></div>
+    
+    <h1 class="floating">💌 Buzón de Cartas de Amor 💌</h1>
+    
+    <div class="mailbox floating">
+        <h2 style="color: white; text-align: center; margin: 0;">Cartas de Amor</h2>
+    </div>
+
+    <div class="letters-container" id="lettersContainer">
+        <!-- Aquí puedes agregar tus cartas. Ejemplo: -->
+        <div class="letter" data-title="Mi Primer Amor" data-content="Amor mío,
+
+        En este Día de San Valentín, aunque la distancia nos separe, mi corazón está más cerca de ti que nunca. Cada día que pasa me recuerda lo afortunado que soy de tenerte en mi vida. A través de los kilómetros, siento tu amor y tu energía envolviéndome, como un cálido abrazo que jamás se apaga.
+        
+        Hoy, quiero que sepas cuán especial eres para mí. Tu risa ilumina mis días, y tu voz es la melodía que acompaña mis pensamientos. Cada vez que miro una estrella en el cielo, pienso en ti y en los momentos que hemos compartido. Esa conexión que tenemos es única y poderosa; me hace sentir que, aunque estemos lejos, siempre estaremos juntos en espíritu.
+        
+        La distancia puede ser difícil, pero también me ha enseñado a valorar cada pequeño instante que pasamos conversando, riendo o simplemente soñando juntos sobre el futuro. Imaginar el día en que finalmente podamos abrazarnos de nuevo es lo que me da fuerzas para seguir adelante y enfrentar cualquier reto que se presente.
+        
+        Quiero que sepas que en cada latido de mi corazón hay un susurro de amor dedicado solo a ti.">
+            <div class="letter-title">Mi Primer Amor</div>
+        </div>
+    
+        
+        <div class="letter" data-title="Continuacion" data-content=" Este San Valentín, brindo por nosotros, por el amor que hemos cultivado y por todos los sueños que aún nos quedan por cumplir. No importa la distancia, nuestro amor es un viaje que vale la pena, y cada día que pasa me acerco más a ti en pensamiento y en alma.
+        
+        Te prometo que haré todo lo posible para que esta distancia sea solo una prueba que superaremos juntos, y espero con ansias el momento en que pueda estar a tu lado y celebrar todos los días de San Valentín que nos esperan.
+        
+        Te amo más de lo que las palabras pueden expresar, y aunque hoy no pueda tenerte aquí físicamente, te llevo conmigo en cada paso que doy.
+        
+        Con todo mi amor, 
+        
+        
+        Anhelo con todo mi corazon que te mejores amor para asi poder volver a estar con normalidad Te amo 3 millones.">
+            <div class="letter-title">Continuacion</div>
+        </div>
+    </div>
+
+    <div class="modal" id="letterModal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModal">&times;</span>
+            <h2 id="modalTitle" style="color: #ff4d4d; text-align: center;"></h2>
+            <p id="modalContent" style="line-height: 1.6; font-size: 1.1em;"></p>
+        </div>
+    </div>
+
+    <script>
+        // Crear corazones flotantes
+        function createHearts() {
+            const heartsContainer = document.getElementById('hearts');
+            const numberOfHearts = 20;
+
+            for (let i = 0; i < numberOfHearts; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.animationDelay = `${Math.random() * 15}s`;
+                heart.style.opacity = Math.random() * 0.5 + 0.1;
+                heartsContainer.appendChild(heart);
+            }
+        }
+
+        createHearts();
+
+        const letters = document.querySelectorAll('.letter');
+        const modal = document.getElementById('letterModal');
+        const closeModal = document.getElementById('closeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+
+        letters.forEach(letter => {
+            letter.addEventListener('click', () => {
+                modalTitle.textContent = letter.dataset.title;
+                modalContent.textContent = letter.dataset.content;
+                modal.style.display = 'flex';
+            });
+        });
+
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
